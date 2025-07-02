@@ -1,0 +1,28 @@
+{
+  "name": "prisma-mongodb-app",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/prisma-mongodb-app/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "prisma": {
+      "command": "prisma",
+      "options": {
+        "cwd": "libs/prisma-mongodb-app"
+      }
+    },
+    "generate-types": {
+      "command": "prisma generate",
+      "options": {
+        "cwd": "libs/prisma-mongodb-app"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/prisma-mongodb-app/**/*.ts"]
+      }
+    }
+  }
+}
