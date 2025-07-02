@@ -1,4 +1,4 @@
-# NodeExpressHub
+# Node Express Hub
 
 Add MongoDB DATABASE_URL on .env file
 
