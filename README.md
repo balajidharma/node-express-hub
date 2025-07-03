@@ -1,13 +1,13 @@
 # Node Express Hub
 
-Add MongoDB DATABASE_URL on .env file
+Add MongoDB MONGODB_APP_DATABASE_URL on .env file
 
-Generate the prisma types
+### Generate the prisma types
 ```
 nx run prisma-mongodb-app:generate-types
 ```
 
-Start the auth api server
+### Start the auth api server
 ```
 nx serve api-auth
 ```
