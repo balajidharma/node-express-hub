@@ -1,6 +1,7 @@
 # Node Express Hub
 
-Add MongoDB MONGODB_APP_DATABASE_URL on .env file
+### Set Environment Variables
+Add MongoDB `MONGODB_APP_DATABASE_URL` on .env file
 
 ### Generate the prisma types
 ```
