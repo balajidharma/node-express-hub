@@ -1,7 +1,7 @@
 import express from 'express';
 import { validateData } from '../middleware/validationMiddleware';
 import { register, login, verifyToken, protectedRoute } from '../controllers/authController';
-import { userRegistrationSchema, userLoginSchema } from '../schemas/userSchemas';
+import { userRegistrationSchema, userLoginSchema } from '@shared-types';
 
 const router = express.Router();
 
