@@ -4,13 +4,20 @@ import jwt from 'jsonwebtoken';
 
 import { PrismaClient } from '@prisma/client/mongodb-app/client.js';
 
+import { UserRegistration, UserLogin } from '@shared-types';
+
+// Extend the Express Request interface
+interface TypedRequestBody<T> extends Request {
+  body: T;
+}
+
 const prisma = new PrismaClient();
 
 const generateToken = (userId: string) => {
     return jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: process.env.JWT_TTL });
 };
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: TypedRequestBody<UserRegistration>, res: Response) => {
     const { email, username, password, name } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
@@ -20,7 +27,7 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({ token });
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: TypedRequestBody<UserLogin>, res: Response) => {
     const { username, password } = req.body;
     const user = await prisma.user.findUnique({ where: { username } });
 
