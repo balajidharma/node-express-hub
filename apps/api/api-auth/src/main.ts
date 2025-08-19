@@ -1,7 +1,7 @@
 import express from 'express';
 import * as path from 'path';
 
-import authRoutes from './routes/authRoutes';
+import authRoutes from './routes/auth.routes';
 
 const app = express();
 
