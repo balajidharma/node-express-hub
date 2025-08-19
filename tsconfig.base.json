@@ -19,7 +19,8 @@
       "@node-express-hub/prisma": ["libs/db/prisma/src/index.ts"],
       "@node-express-hub/prisma-mongodb-app": [
         "libs/prisma-mongodb-app/src/index.ts"
-      ]
+      ],
+      "@web-react": ["apps/web/web-react/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
