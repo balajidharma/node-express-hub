@@ -1,4 +1,4 @@
-import { Route, Routes, Link } from 'react-router-dom';
+import { Route, Routes, Link } from 'react-router';
 import HomePage from '../pages/home';
 import LoginPage from '../pages/auth/login';
 
@@ -11,7 +11,7 @@ export function App() {
         />
         <Route
           path="/login"
-          element={<LoginPage />}
+          element={<LoginPage canResetPassword={true} />}
         />
       </Routes>
   );

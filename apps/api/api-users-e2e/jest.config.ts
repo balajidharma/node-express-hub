@@ -1,6 +1,6 @@
 export default {
   displayName: 'api-users-e2e',
-  preset: '../../../jest.preset.js',
+  preset: '../../../jest.preset.ts',
   globalSetup: '<rootDir>/src/support/global-setup.ts',
   globalTeardown: '<rootDir>/src/support/global-teardown.ts',
   setupFiles: ['<rootDir>/src/support/test-setup.ts'],

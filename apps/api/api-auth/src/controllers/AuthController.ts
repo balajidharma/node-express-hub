@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import ms from 'ms';
 
 import { PrismaClient } from '@prisma/client/mongodb-app/client.js';
 
@@ -14,7 +15,20 @@ interface TypedRequestBody<T> extends Request {
 const prisma = new PrismaClient();
 
 const generateToken = (userId: string) => {
-    return jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: process.env.JWT_TTL });
+    const expiresIn = process.env.JWT_TTL || '1h'; // Default to 1 hour if not set
+
+    const expiresInMs = typeof expiresIn === 'string' ? ms(expiresIn) : expiresIn;
+
+    // Check if the conversion was successful. ms() returns undefined for invalid input.
+    if (!expiresInMs) {
+        throw new Error('Invalid JWT_TTL value provided. Please use a valid format (e.g., "1h", "30d", or a number in ms).');
+    }
+
+    const token = jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: expiresIn });
+
+    const expiresAt = Date.now() + expiresInMs;
+
+    return { token, expiresAt };
 };
 
 export const register = async (req: TypedRequestBody<UserRegistration>, res: Response) => {
@@ -23,8 +37,8 @@ export const register = async (req: TypedRequestBody<UserRegistration>, res: Res
     const user = await prisma.user.create({
     data: { email, username, password: hashedPassword, name },
     });
-    const token = generateToken(user.id);
-    res.status(201).json({ token });
+    const { token, expiresAt } = generateToken(user.id);
+    res.status(201).json({ token, expiresAt });
 };
 
 export const login = async (req: TypedRequestBody<UserLogin>, res: Response) => {
@@ -35,8 +49,8 @@ export const login = async (req: TypedRequestBody<UserLogin>, res: Response) => 
     return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = generateToken(user.id);
-    res.json({ token });
+    const { token, expiresAt } = generateToken(user.id);
+    res.status(201).json({ token, expiresAt });
 };
 
 export const verifyToken = (req: Request, res: Response, next: Function) => {
@@ -44,7 +58,7 @@ export const verifyToken = (req: Request, res: Response, next: Function) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-    return res.sendStatus(401);
+        return res.sendStatus(401);
     }
 
     jwt.verify(token, process.env.JWT_SECRET as string, (err, user) => {
