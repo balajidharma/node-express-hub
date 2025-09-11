@@ -33,9 +33,9 @@ describe('Auth Flow', () => {
 
   it('Should login a existing user and receive a token, and access a protected route to get userId', async () => {
     const user = {
-      username: "testuser",
-      password: "password"
-    }
+      username: 'testuser',
+      password: 'password',
+    };
 
     // 1. Login a existing user
     const loginResponse = await axios.post('/auth/login', user);
@@ -56,5 +56,5 @@ describe('Auth Flow', () => {
     expect(protectedResponse.data.message).toBe('Protected route accessed');
     expect(protectedResponse.data.user).toHaveProperty('userId');
     expect(typeof protectedResponse.data.user.userId).toBe('string');
-  })
+  });
 });
