@@ -17,7 +17,8 @@ Content-Type: application/json
     "name": "Test User",
     "username": "testuser",
     "email": "testuser@example.com",
-    "password": "password"
+    "password": "password",
+    "password_confirmation": "password"
 }
 
 ###

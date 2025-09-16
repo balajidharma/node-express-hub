@@ -8,17 +8,52 @@ import { LoaderCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserRegistrationSchema, UserRegistration } from '@shared-types';
+import axios, { AxiosError } from 'axios';
+import { useContext } from 'react';
+import authContext, { AuthContextType } from '@web-react/context/auth-context';
+import { useLocation, useNavigate } from 'react-router';
 
 export default function Register() {
+  const auth: AuthContextType = useContext(authContext);
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<UserRegistration>({
     resolver: zodResolver(UserRegistrationSchema),
   });
 
-  const onSubmit = async (data: UserRegistration) => {};
+  const from = location.state?.from?.pathname || '/dashboard';
+
+  const onSubmit = async (data: UserRegistration) => {
+    const API_AUTH_BASE_URL =
+      import.meta.env.API_AUTH_BASE_URL || 'http://localhost:3333';
+    try {
+      const response = await axios.post('/auth/register', data, {
+        baseURL: API_AUTH_BASE_URL,
+      });
+      if (response.status === 201) {
+        console.log('Success:', response.data);
+        auth?.login(response.data.token, response.data.expiresAt);
+        navigate(from, { replace: true });
+      } else {
+        console.log('Error else:', response.data);
+      }
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.data?.fieldErrors) {
+        Object.entries(error.response.data.fieldErrors).forEach(
+          ([key, value]) => {
+            // @ts-expect-error
+            setError(key, { type: 'manual', message: value[0] });
+          }
+        );
+      }
+    }
+  };
 
   return (
     <AuthLayout
@@ -40,7 +75,7 @@ export default function Register() {
               {...register('name')}
               placeholder="Full name"
             />
-            <InputError message={errors.name} className="mt-2" />
+            <InputError message={errors.name && errors.name.message} className="mt-2" />
           </div>
 
           <div className="grid gap-2">
@@ -55,7 +90,7 @@ export default function Register() {
               {...register('username')}
               placeholder="Username"
             />
-            <InputError message={errors.username} className="mt-2" />
+            <InputError message={errors.username && errors.username.message} className="mt-2" />
           </div>
 
           <div className="grid gap-2">
@@ -69,7 +104,7 @@ export default function Register() {
               {...register('email')}
               placeholder="email@example.com"
             />
-            <InputError message={errors.email} />
+            <InputError message={errors.email && errors.email.message} />
           </div>
 
           <div className="grid gap-2">
@@ -83,7 +118,7 @@ export default function Register() {
               {...register('password')}
               placeholder="Password"
             />
-            <InputError message={errors.password} />
+            <InputError message={errors.password && errors.password.message} />
           </div>
 
           <div className="grid gap-2">
@@ -97,7 +132,7 @@ export default function Register() {
               {...register('password_confirmation')}
               placeholder="Confirm password"
             />
-            <InputError message={errors.password_confirmation} />
+            <InputError message={errors.password_confirmation && errors.password_confirmation.message} />
           </div>
 
           <Button

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { ZodError, z } from "zod";
 import ms from 'ms';
 
 import { PrismaClient } from '@prisma/client/mongodb-app/client.js';
@@ -40,6 +41,29 @@ export const register = async (
   res: Response
 ) => {
   const { email, username, password, name } = req.body;
+  const existingUser = await prisma.user.findUnique({ where: { username } });
+  if (existingUser) {
+    const error = new ZodError([
+      {
+        code: "custom",
+        message: "Username is already taken.",
+        path: ["username"],
+      },
+    ]);
+    return res.status(401).json(z.flattenError(error));
+  }
+
+  const existingEmail = await prisma.user.findUnique({ where: { email } });
+  if (existingEmail) {
+    const error = new ZodError([
+      {
+        code: "custom",
+        message: "Email is already in use.",
+        path: ["email"],
+      },
+    ]);
+    return res.status(401).json(z.flattenError(error));
+  }
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
     data: { email, username, password: hashedPassword, name },
@@ -56,13 +80,14 @@ export const login = async (
   const user = await prisma.user.findUnique({ where: { username } });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res
-      .status(401)
-      .json({
-        errors: {
-          username: { message: 'These credentials do not match our records.' },
-        },
-      });
+    const error = new ZodError([
+      {
+        code: "custom",
+        message: "These credentials do not match our records.",
+        path: ["username"],
+      },
+    ]);
+    return res.status(401).json(z.flattenError(error));
   }
 
   const { token, expiresAt } = generateToken(user.id);
