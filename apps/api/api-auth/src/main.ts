@@ -1,25 +1,24 @@
 import express from 'express';
-import * as path from 'path';
 import cors from 'cors';
-
-import authRoutes from './routes/auth.routes';
+import { toNodeHandler } from "better-auth/node";
+import { auth } from './lib/auth.js';
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:4200", // Replace with your frontend's origin
+    methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed HTTP methods
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+  })
+);
+
+app.all("/api/auth/*", toNodeHandler(auth));
 
 app.use(express.json());
 
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-
-app.get('/', (req, res) => {
-  res.send({ message: 'Welcome to api-auth!' });
-});
-
-app.use('/auth', authRoutes);
-
 const port = process.env.API_AUTH_PORT || 3333;
 const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+  console.log(`Listening at http://localhost:${port}`);
 });
 server.on('error', console.error);

@@ -1,11 +1,13 @@
 import AppLayout from '@web-react/layouts/app-layout';
 import { Link } from 'react-router';
-import { useContext } from 'react';
-import authContext from '../context/auth-context';
+import { useSelector } from 'react-redux'
 import { Button } from '@web-react/components/ui/button';
+import { useDispatch } from 'react-redux';
+import { logout } from '@web-react/features/auth/authSlice';
 
 export default function Home() {
-  const auth = useContext(authContext);
+  const auth = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch();
 
   return (
     <AppLayout>
@@ -13,7 +15,10 @@ export default function Home() {
       <header className="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
         <nav className="flex items-center justify-end gap-4">
           <>
-            {auth?.isAuthenticated && (
+            {auth?.isLoading && (
+              <div className="w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div>
+            )}
+            {!auth?.isLoading && auth?.isAuthenticated && (
               <>
                 <Link
                   to="/dashboard"
@@ -21,12 +26,12 @@ export default function Home() {
                 >
                   Dashboard
                 </Link>
-                <Button variant="outline" onClick={() => auth.logout()}>
+                <Button variant="outline" onClick={() => dispatch(logout())}>
                   Log out
                 </Button>
               </>
             )}
-            {!auth?.isAuthenticated && (
+            {!auth?.isLoading && !auth?.isAuthenticated && (
               <>
                 <Link
                   to="/login"

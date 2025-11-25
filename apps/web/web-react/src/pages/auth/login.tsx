@@ -9,10 +9,10 @@ import { LoaderCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserLoginSchema, UserLogin } from '@shared-types';
-import axios, { AxiosError } from 'axios';
-import authContext, { AuthContextType } from '@web-react/context/auth-context';
-import { useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import { loginUser } from '@web-react/features/auth/authSlice';
+import { useSelector, useDispatch } from 'react-redux'
+import { useEffect } from 'react';
 
 interface LoginProps {
   status?: string;
@@ -20,9 +20,16 @@ interface LoginProps {
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
-  const auth: AuthContextType = useContext(authContext);
+  const authState = useSelector((state: any) => state.auth);
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (authState.isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [authState.isAuthenticated, navigate]);
 
   const {
     register,
@@ -31,33 +38,28 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     formState: { errors, isSubmitting },
   } = useForm<UserLogin>({
     resolver: zodResolver(UserLoginSchema),
+    defaultValues: {
+      remember: false,
+    },
   });
 
   const from = location.state?.from?.pathname || '/dashboard';
 
   const onSubmit = async (data: UserLogin) => {
-    const API_AUTH_BASE_URL =
-      import.meta.env.API_AUTH_BASE_URL || 'http://localhost:3333';
     try {
-      const response = await axios.post('/auth/login', data, {
-        baseURL: API_AUTH_BASE_URL,
-      });
-      if (response.status === 201) {
-        console.log('Success:', response.data);
-        auth?.login(response.data.token, response.data.expiresAt);
+      const resultAction = await dispatch(loginUser(data) as any);
+      if (loginUser.fulfilled.match(resultAction)) {
         navigate(from, { replace: true });
       } else {
-        console.log('Error else:', response.data);
+        if (resultAction.payload?.code === 'INVALID_USERNAME_OR_PASSWORD') {
+          setError('username', {
+            type: 'manual',
+            message: resultAction.payload.message,
+          });
+        }
       }
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.data?.fieldErrors) {
-        Object.entries(error.response.data.fieldErrors).forEach(
-          ([key, value]) => {
-            // @ts-expect-error
-            setError(key, { type: 'manual', message: value[0] });
-          }
-        );
-      }
+      console.error(error);
     }
   };
 
@@ -110,7 +112,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
           </div>
 
           <div className="flex items-center space-x-3">
-            <Checkbox id="remember" name="remember" tabIndex={3} />
+            <Checkbox id="remember" tabIndex={3} {...register('remember')} />
             <Label htmlFor="remember">Remember me</Label>
           </div>
 

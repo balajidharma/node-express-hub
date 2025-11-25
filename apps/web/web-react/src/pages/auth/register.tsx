@@ -9,12 +9,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserRegistrationSchema, UserRegistration } from '@shared-types';
 import axios, { AxiosError } from 'axios';
-import { useContext } from 'react';
-import authContext, { AuthContextType } from '@web-react/context/auth-context';
 import { useLocation, useNavigate } from 'react-router';
+import { authClient } from '@web-react/lib/auth-client';
+import { setSession } from '@web-react/features/auth/authSlice';
+import { useSelector, useDispatch } from 'react-redux'
 
 export default function Register() {
-  const auth: AuthContextType = useContext(authContext);
+  const authState = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -30,18 +32,20 @@ export default function Register() {
   const from = location.state?.from?.pathname || '/dashboard';
 
   const onSubmit = async (data: UserRegistration) => {
-    const API_AUTH_BASE_URL =
-      import.meta.env.API_AUTH_BASE_URL || 'http://localhost:3333';
     try {
-      const response = await axios.post('/auth/register', data, {
-        baseURL: API_AUTH_BASE_URL,
-      });
-      if (response.status === 201) {
-        console.log('Success:', response.data);
-        auth?.login(response.data.token, response.data.expiresAt);
+      const { data: session, error } = await authClient.signUp.email(data);
+      if (session) {
+        dispatch(setSession(session));
         navigate(from, { replace: true });
-      } else {
-        console.log('Error else:', response.data);
+      }
+      if (error) {
+        // error code get username_taken or email_taken
+        if (error.code === 'USERNAME_IS_ALREADY_TAKEN_PLEASE_TRY_ANOTHER') {
+          setError('username', { type: 'manual', message: 'Username is already taken' });
+        }
+        if (error.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL') {
+          setError('email', { type: 'manual', message: 'Email is already taken' });
+        }
       }
     } catch (error) {
       if (error instanceof AxiosError && error.response?.data?.fieldErrors) {
