@@ -15,11 +15,10 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useEffect } from 'react';
 
 interface LoginProps {
-  status?: string;
   canResetPassword: boolean;
 }
 
-export default function Login({ status, canResetPassword }: LoginProps) {
+export default function Login({ canResetPassword }: LoginProps) {
   const authState = useSelector((state: any) => state.auth);
   const location = useLocation();
   const navigate = useNavigate();
@@ -72,18 +71,17 @@ export default function Login({ status, canResetPassword }: LoginProps) {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         <div className="grid gap-6">
           <div className="grid gap-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="email">Email address</Label>
             <Input
-              id="username"
-              type="text"
-              {...register('username')}
+              id="email"
+              type="email"
               required
-              autoFocus
               tabIndex={1}
-              autoComplete="username"
-              placeholder="Your username"
+              autoComplete="email"
+              {...register('email')}
+              placeholder="email@example.com"
             />
-            <InputError message={errors.username && errors.username.message} />
+            <InputError message={errors.email && errors.email.message} />
           </div>
 
           <div className="grid gap-2">

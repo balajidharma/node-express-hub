@@ -12,9 +12,15 @@ export const UserRegistrationSchema = z.object({
 });
 
 export const UserLoginSchema = z.object({
-  username: z.string(),
+  email: z.email(),
   password: z.string().min(8),
   remember: z.boolean().default(false),
 });
+
+export const UserForgotPasswordSchema = z.object({
+  email: z.email(),
+});
+
 export type UserRegistration = z.infer<typeof UserRegistrationSchema>;
 export type UserLogin = z.infer<typeof UserLoginSchema>;
+export type UserForgotPassword = z.infer<typeof UserForgotPasswordSchema>;

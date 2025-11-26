@@ -39,8 +39,8 @@ export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (loginData: UserLogin, { dispatch, rejectWithValue }) => {
     try {
-      const { error } = await authClient.signIn.username({
-        username: loginData.username,
+      const { error } = await authClient.signIn.email({
+        email: loginData.email,
         password: loginData.password,
         rememberMe: loginData.remember,
       });

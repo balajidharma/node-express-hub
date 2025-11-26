@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router';
 import HomePage from '../pages/home';
 import LoginPage from '../pages/auth/login';
 import RegisterPage from '../pages/auth/register';
+import ForgotPassword from '../pages/auth/forgot-password';
 import DashboardPage from '../pages/dashboard';
 import ProtectedRoute from '../components/protected-route';
 import { useSelector, useDispatch } from 'react-redux'
@@ -24,6 +25,7 @@ export function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage canResetPassword={true} />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route
         path="/dashboard"
         element={
